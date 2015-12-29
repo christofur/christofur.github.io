@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link href='//fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700,400italic' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" type="text/css" href="http://christofur.github.io/theme/css/style.min.css">
+  <link rel="stylesheet" type="text/css" href="http://christofur.github.io/theme/css/pygments.min.css">
+  <link rel="stylesheet" type="text/css" href="http://christofur.github.io/theme/css/font-awesome.min.css">
+
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="" />
+<meta name="author" content="Chris Perks" />
+<meta name="description" content="A tour of array query features in JavaScript" />
+<meta name="keywords" content="javascript, typescript, lodash, es6, es2015, es2016, arrays">
+<meta property="og:site_name" content="Chris Perks | node & js & c#"/>
+<meta property="og:title" content="JavaScript Arrays in 2016 and beyond"/>
+<meta property="og:description" content="A tour of array query features in JavaScript"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="http://christofur.github.io/javascript-arrays-2016.html"/>
+<meta property="og:type" content="article"/>
+<meta property="article:published_time" content="2015-12-29 20:48:00+01:00"/>
+<meta property="article:modified_time" content=""/>
+<meta property="article:author" content="http://christofur.github.io/author/chris-perks.html">
+<meta property="article:section" content="JavaScript"/>
+<meta property="article:tag" content="javascript"/>
+<meta property="article:tag" content="typescript"/>
+<meta property="article:tag" content="lodash"/>
+<meta property="article:tag" content="es6"/>
+<meta property="article:tag" content="es2015"/>
+<meta property="article:tag" content="es2016"/>
+<meta property="article:tag" content="arrays"/>
+<meta property="og:image" content="images/chris.jpg">  <title>Chris Perks | node & js & c# &ndash; JavaScript Arrays in 2016 and beyond</title>
+</head>
+<body>
+  <aside>
+    <div>
+      <a href="http://christofur.github.io">
+        <img src="images/chris.jpg" alt="Chris Perks" title="Chris Perks">
+      </a>
+      <h1><a href="http://christofur.github.io">Chris Perks</a></h1>
+      <p>code & bleeps.</p>
+      <nav>
+        <ul class="list">
+        </ul>
+      </nav>
+      <ul class="social">
+        <li><a class="sc-linkedin" href="https://uk.linkedin.com/in/christofr" target="_blank"><i class="fa fa-linkedin"></i></a></li>
+        <li><a class="sc-twitter" href="https://twitter.com/perksc" target="_blank"><i class="fa fa-twitter"></i></a></li>
+        <li><a class="sc-stack-overflow" href="http://stackoverflow.com/users/638064/christofr" target="_blank"><i class="fa fa-stack-overflow"></i></a></li>
+        <li><a class="sc-github" href="https://github.com/christofur" target="_blank"><i class="fa fa-github"></i></a></li>
+      </ul>
+    </div>
+  </aside>
+  <main>
+
+<article>
+  <header>
+    <h1 id="javascript-arrays-2016">JavaScript Arrays in 2016 and beyond</h1>
+    <p>Posted on Tue 29 December 2015 in <a href="http://christofur.github.io/category/javascript.html">JavaScript</a></p>
+  </header>
+  <div>
+    <h1>JavaScript Arrays in 2016 and beyond</h1>
+<p>JavaScript’s loose typing extends over many aspects of the language, including collections. We’re allowed to do this:</p>
+<div class="highlight"><pre>var mixedArray = [
+    1, 2, &#39;Chris&#39;, true, [ 3, false], new Date(), 4
+];
+</pre></div>
+
+
+<p>As you can see, we’re able to include other objects and arrays within an array, allowing us to build some fairly complex data structures if we choose.</p>
+<p>JavaScript arrays have a few other peculiarities, viewed against most other common programming languages. A well known uncommon implementation is that of length.</p>
+<p>Arrays in JavaScript are sparse, meaning that we’re allowed gaps in the sequential numbers which form the array’s index.</p>
+<div class="highlight"><pre>var people = [];
+// people.length is 0
+people[1000] = &#39;Bob&#39;;
+// people.length is 1001
+</pre></div>
+
+
+<p>As you can see here, length can be greater than the number of elements in an array. It simply increases the highest index value by 1.</p>
+<h2>A few test cases</h2>
+<p>Given a simple data structure:</p>
+<div class="highlight"><pre>{
+     { name: chris, age: 20, town: sheffield },
+     { name: bill, age: 25, town: london },
+     { name: phil, age: 30, town: london }
+}
+</pre></div>
+
+
+<p>let’s see a few approaches to storing and retrieving this data in everyday JavaScript, an extension library (lodash), a transpiler (TypeScript) and finally, the more recent standards of ECMAScript.</p>
+<h2>ECMAScript 5.x</h2>
+<p>In plain-old JavaScript, we use an array initialiser as such:</p>
+<div class="highlight"><pre>var people = [
+        {
+            &#39;name&#39;: &#39;Chris&#39;,
+            &#39;age&#39;: 20,
+            &#39;town&#39;: &#39;Sheffield&#39;
+        },
+        {
+            &#39;name&#39;: &#39;Bill&#39;,
+            &#39;age&#39;: 25,
+            &#39;town&#39;: &#39;London&#39;
+        },
+        {
+            &#39;name&#39;: &#39;Phil&#39;,
+            &#39;age&#39;: 30,
+            &#39;town&#39;: &#39;London&#39;
+        }
+];
+</pre></div>
+
+
+<p>We’ll focus on two cases; fetching the first person called Chris, and fetching anyone in London.</p>
+<p>The ECMAScript 5.1 standard gave us <code>Array.prototype.filter()</code>, which covers both of our above needs. filter() executes a callback for each item in an array, and returns a new array of items for which the callback returned true. This is best illustrated with an example:</p>
+<div class="highlight"><pre><span class="c1">// Find Chris</span>
+<span class="kd">var</span> <span class="nx">chris</span> <span class="o">=</span> <span class="nx">people</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">findChris</span><span class="p">);</span>
+
+<span class="kd">function</span> <span class="nx">findChris</span><span class="p">(</span><span class="nx">value</span><span class="p">){</span>
+    <span class="k">return</span> <span class="nx">value</span><span class="p">.</span><span class="nx">name</span> <span class="o">===</span> <span class="s1">&#39;Chris&#39;</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;We found &#39;</span> <span class="o">+</span> <span class="nx">chris</span><span class="p">.</span><span class="nx">length</span> <span class="o">+</span> <span class="s1">&#39; Chris.&#39;</span><span class="p">);</span> <span class="c1">// We found 1 Chris.</span>
+</pre></div>
+
+
+<p>If we want, we can make a generic version of <code>findChris()</code>, which can be used to search for any value of any property:</p>
+<div class="highlight"><pre><span class="kd">function</span> <span class="nx">filterByTerm</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="p">(</span><span class="nx">value</span><span class="cp">[</span><span class="nx">this.term</span><span class="cp">]</span> <span class="o">===</span> <span class="k">this</span><span class="p">.</span><span class="nx">value</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>And use this function to find anyone living in London:</p>
+<div class="highlight"><pre>// Find everyone in London
+var londoners = people.filter(filterByTerm,{
+    &#39;term&#39;: &#39;town&#39;,
+    &#39;value&#39;: &#39;London&#39;
+});
+console.log(&#39;There are &#39; + londoners.length + &#39; Londoners.&#39;); //There are 2 Londoners
+</pre></div>
+
+
+<p><code>filter()</code> is nice, and works with all browsers (IE 9+). The generic filtering function <code>filterByTerm</code> is the kind of multipurpose code we’re interested in, so we’ll continue down that path and see what the newer frameworks and language versions can offer us.</p>
+<h2>lodash</h2>
+<p>lodash provides a <a href="https://lodash.com/docs">whole heap</a> of utility methods for us to use in managing collections, querying data structures and other areas. Browser support is broad, going back to IE6. Lo dash supports <a href="http://filimanjaro.com/blog/2014/introducing-lazy-evaluation/">lazy evaluated chaining</a> making the toolkit really powerful and expressive.</p>
+<p>Using the same collection of people (described above), we can use the lo dash find function to get a single element:</p>
+<div class="highlight"><pre><span class="c1">//Find Chris</span>
+<span class="kd">var</span> <span class="nx">chris</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">result</span><span class="p">(</span><span class="nx">_</span><span class="p">.</span><span class="nx">find</span><span class="p">(</span><span class="nx">people</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">person</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">person</span><span class="p">.</span><span class="nx">name</span> <span class="o">===</span> <span class="s1">&#39;Chris&#39;</span><span class="p">;</span>
+<span class="p">}),</span> <span class="s1">&#39;name&#39;</span><span class="p">);</span>
+</pre></div>
+
+
+<p>In this simple use case, the lodash syntax doesn’t seem any nicer or more useful than the <code>filter()</code> function we used above. However, lo dash provides it’s own filter function, which we can use to satisfy our ‘find all people in London’ query:</p>
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">londoners</span> <span class="o">=</span> <span class="nx">_</span><span class="p">.</span><span class="nx">filter</span><span class="p">(</span><span class="nx">people</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">n</span><span class="p">.</span><span class="nx">town</span> <span class="o">==</span> <span class="s1">&#39;London&#39;</span><span class="p">;</span>
+<span class="p">});</span>
+</pre></div>
+
+
+<p>This is pretty nice, but again, nothing dramatically better than our standard JavaScript 1.6 <code>filter()</code> function. lodash has some really nice map and reduce functions, so I’d still recommend it for more complex collection management and query cases.</p>
+<h2>TypeScript</h2>
+<p>So far, we’ve been dealing with dynamic typing, in that there’s nothing stopping us accidentally referencing or querying against properties which do not exist, or adding another entity type to the list of people.</p>
+<p>Using TypeScript, we can upgrade our list of people (see above) into a fully fledged array of statically typed People objects.</p>
+<p>Let’s start with a class to represent a person:</p>
+<div class="highlight"><pre><span class="nt">class</span> <span class="nt">person</span> <span class="p">{</span>
+    <span class="n">constructor</span><span class="p">(</span><span class="n">name</span><span class="o">:</span> <span class="n">string</span><span class="o">,</span> <span class="n">age</span><span class="o">:</span> <span class="n">number</span><span class="o">,</span> <span class="n">town</span><span class="o">:</span> <span class="n">string</span><span class="p">)</span>
+    <span class="err">{</span>
+        <span class="n">this</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">;</span>
+        <span class="n">this</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span><span class="p">;</span>
+        <span class="n">this</span><span class="o">.</span><span class="n">town</span> <span class="o">=</span> <span class="n">town</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nt">name</span><span class="o">:</span> <span class="nt">string</span><span class="o">;</span>
+    <span class="nt">age</span><span class="o">:</span> <span class="nt">number</span><span class="o">;</span>
+    <span class="nt">town</span><span class="o">:</span> <span class="nt">string</span><span class="o">;</span>
+<span class="err">}</span>
+</pre></div>
+
+
+<p>This TypeScript code describes a class with three properties - name, age and town. Each property has a type - number or string. Lastly, we provide a constructor to instantiate a new person object with the correct property values.</p>
+<p>We can create an array of person objects, using the person constructor, like this:</p>
+<div class="highlight"><pre>var people:Array&lt;person&gt; = [
+        new person(&#39;Chris&#39;, 20, &#39;Sheffield&#39;),
+        new person(&#39;Bill&#39;, 25, &#39;London&#39;),
+        new person(&#39;Phil&#39;, 30, &#39;London&#39;)
+    ];
+</pre></div>
+
+
+<p>TypeScript encourages us to get going with lambda syntax, which does a great job of visually simplifying our query functions:</p>
+<div class="highlight"><pre>//Find Chris
+var chris = people.filter((person) =&gt; { return person.name === &#39;Chris&#39;; });
+console.log(&#39;We found &#39; + chris.length + &#39; Chris.&#39;); //We found 1 Chris
+
+//Find all Londoners
+var londoners = people.filter((person) =&gt; { return person.town === &#39;London&#39;});
+console.log(&#39;There are &#39; + londoners.length + &#39; Londoners.&#39;); //There are 2 Londoners
+</pre></div>
+
+
+<p>This is definitely the nicest syntax we’ve worked with yet. Hoorah for lambda! Our code is now compact and easy to read.</p>
+<h2>ES2015 and ES2016</h2>
+<p>Before we’re done, let’s quickly look at how we can incorporate lambda / arrow functions into the standard JavaScript <code>filter()</code> function to polish up our code a little.</p>
+<div class="highlight"><pre>var londoners = people.filter(person =&gt; person.town === &#39;London&#39;);
+console.log(&#39;There are &#39; + londoners.length + &#39; Londoners.&#39;); //There are 2 Londoners.
+</pre></div>
+
+
+<p>I think you’ll agree, we’ve JavaScript is progressing into a fine looking, expressive language. We have several options for querying collections, including the awesome combination of lambdas and the <code>filter()</code> function.</p>
+  </div>
+  <div class="tag-cloud">
+    <p>
+      <a href="http://christofur.github.io/tag/javascript.html">javascript</a>
+      <a href="http://christofur.github.io/tag/typescript.html">typescript</a>
+      <a href="http://christofur.github.io/tag/lodash.html">lodash</a>
+      <a href="http://christofur.github.io/tag/es6.html">es6</a>
+      <a href="http://christofur.github.io/tag/es2015.html">es2015</a>
+      <a href="http://christofur.github.io/tag/es2016.html">es2016</a>
+      <a href="http://christofur.github.io/tag/arrays.html">arrays</a>
+    </p>
+  </div>
+</article>
+
+    <footer>
+        <p>&copy; Chris Perks </p>
+<p>Built using <a href="http://getpelican.com" target="_blank">Pelican</a> - <a href="https://github.com/alexandrevicenzi/flex" target="_blank">Flex</a> theme by <a href="http://alexandrevicenzi.com" target="_blank">Alexandre Vicenzi</a></p>    </footer>
+  </main>
+
+
+
+
+
+<script type="application/ld+json">
+{
+  "@context": "http://schema.org",
+  "@type": "BlogPosting",
+  "name": "JavaScript Arrays in 2016 and beyond",
+  "headline": "JavaScript Arrays in 2016 and beyond",
+  "datePublished": "2015-12-29 20:48:00+01:00",
+  "dateModified": "",
+  "author": {
+    "@type": "Person",
+    "name": "Chris Perks",
+    "url": "http://christofur.github.io/author/chris-perks.html"
+  },
+  "image": "images/chris.jpg",
+  "url": "http://christofur.github.io/javascript-arrays-2016.html",
+  "description": "A tour of array query features in JavaScript"
+}
+</script></body>
+</html>
